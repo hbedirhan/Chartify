@@ -10,9 +10,12 @@ function PolarArea() {
 
     const { datasetName, datasetData, label } = values;
 
+    const labelArray = label.replaceAll(' ', '').split(',');
+    const data = datasetData.replaceAll(' ', '').split(',').map(d => Number(d));
+
     dispatch(polarDataName(datasetName));
-    dispatch(polarData(datasetData));
-    dispatch(polarLabels(label));
+    dispatch(polarData(data));
+    dispatch(polarLabels(labelArray));
   };
   
     return (

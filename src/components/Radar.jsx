@@ -10,9 +10,12 @@ function Radar() {
 
     const { datasetName, datasetData, label } = values;
 
+    const labelArray = label.replaceAll(' ', '').split(',');
+    const data = datasetData.replaceAll(' ', '').split(',').map(d => Number(d));
+
     dispatch(radarDataName(datasetName));
-    dispatch(radarData(datasetData));
-    dispatch(radarLabels(label));
+    dispatch(radarData(data));
+    dispatch(radarLabels(labelArray));
   };
   
     return (

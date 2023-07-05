@@ -11,9 +11,12 @@ function Pie() {
 
     const { datasetName, datasetData, label } = values;
 
+    const labelArray = label.replaceAll(' ', '').split(',');
+    const data = datasetData.replaceAll(' ', '').split(',').map(d => Number(d));
+
     dispatch(pieDataName(datasetName));
-    dispatch(pieData(datasetData));
-    dispatch(pieLabel(label));
+    dispatch(pieData(data));
+    dispatch(pieLabel(labelArray));
   };
   
     return (
