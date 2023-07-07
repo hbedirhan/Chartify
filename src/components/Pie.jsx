@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import { useDispatch } from 'react-redux';
 import { pieData, pieDataName, pieLabel } from '../redux/pieSlice';
@@ -6,21 +6,33 @@ import { validationSchema } from './validation';
 
 
 function Pie() {
+  const [alert, setAlert] = useState(false);
   const dispatch = useDispatch();
   const handleSubmit = (values) => {
 
     const { datasetName, datasetData, label } = values;
 
-    const labelArray = label.replaceAll(' ', '').split(',');
-    const data = datasetData.replaceAll(' ', '').split(',').map(d => Number(d));
+    const labelArray = label.replaceAll(' ', '').split(',')
+      .filter((item) => item !== '');
+    const data = datasetData.replaceAll(' ', '').split(',')
+      .filter((d) => d !== '')
+      .map(d => Number(d))
+      .filter((d) => !isNaN(d) && (d !== ''));
 
-    dispatch(pieDataName(datasetName));
-    dispatch(pieData(data));
-    dispatch(pieLabel(labelArray));
+    if (labelArray.length == data.length) {
+      dispatch(pieDataName(datasetName));
+      dispatch(pieData(data));
+      dispatch(pieLabel(labelArray));
+    } else {
+      setAlert(true);
+      setTimeout(() => {
+        setAlert(false);
+      }, 6000);
+    }
   };
-  
-    return (
-      <>
+
+  return (
+    <>
       <Formik
         initialValues={{
           datasetName: '',
@@ -32,25 +44,42 @@ function Pie() {
       >
         {({ errors, touched }) => (
           <Form>
-            <Field type="text" id="datasetName" name="datasetName" placeholder="Dataset Name" />
-            {errors.datasetName && touched.datasetName ? (
-              <div>{errors.datasetName}</div>
-            ) : null}
-            <Field type="text" id="datasetData" name="datasetData" placeholder="Dataset Data (e.g. 100, 200, 300...)" />
-            {errors.datasetData && touched.datasetData ? (
-              <div>{errors.datasetData}</div>
-            ) : null}
-            <Field type="text" id="label" name="label" placeholder="Labels (e.g. Red, Blue, Yellow...)" />
-            {errors.label && touched.label ? (
-              <div>{errors.label}</div>
-            ) : null}
+            <Field
+              className={errors.datasetName && touched.datasetName ? 'alert-input' : 'input'}
+              type="text"
+              id="datasetName"
+              name="datasetName"
+              placeholder="Dataset Name"
+            />
+
+            <Field
+              className={errors.datasetData && touched.datasetData ? 'alert-input' : 'input'}
+              type="text"
+              id="datasetData"
+              name="datasetData"
+              placeholder="Dataset (e.g. 100, 200, 300...)"
+            />
+
+            <Field
+              className={errors.label && touched.label ? 'alert-input' : 'input'}
+              type="text"
+              id="label"
+              name="label"
+              placeholder="Labels (e.g. Red, Blue, Yellow...)"
+            />
+
             <button type="submit">Submit</button>
+
+            {alert ? <div className="alert">
+                    <span className="closebtn" onClick={() => setAlert(false)}>&times;</span>
+                      The number of data points and the number of labels are not equal.
+                    </div> : null}
           </Form>
         )}
       </Formik>
     </>
 
-    );
+  );
 }
 
 export default Pie

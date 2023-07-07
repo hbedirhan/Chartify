@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import { useDispatch } from 'react-redux';
 import { lineTitle, lineDataName1, lineDataName2, setData1, setData2, setLabel } from '../redux/lineSlice';
@@ -6,22 +6,36 @@ import { validations } from './validation';
 
 
 function Line() {
+  const [alert, setAlert] = useState(false);
   const dispatch = useDispatch();
-
   const handleSubmit = (values) => {
 
     const { chartTitle, datasetName1, datasetData1, datasetName2, datasetData2, label } = values;
 
-    const labelArray = label.replaceAll(' ', '').split(',');
-    const data1 = datasetData1.replaceAll(' ', '').split(',').map(d => Number(d));
-    const data2 = datasetData2.replaceAll(' ', '').split(',').map(d => Number(d));
+    const labelArray = label.replaceAll(' ', '').split(',')
+      .filter((item) => item !== '');
+    const data1 = datasetData1.replaceAll(' ', '').split(',')
+      .filter((d) => d !== '')
+      .map(d => Number(d))
+      .filter((d) => !isNaN(d) && (d !== ''));
+    const data2 = datasetData2.replaceAll(' ', '').split(',')
+      .filter((d) => d !== '')
+      .map(d => Number(d))
+      .filter((d) => !isNaN(d) && (d !== ''));
 
-    dispatch(lineTitle(chartTitle));
-    dispatch(lineDataName1(datasetName1));
-    dispatch(lineDataName2(datasetName2));
-    dispatch(setData1(data1));
-    dispatch(setData2(data2));
-    dispatch(setLabel(labelArray));
+    if (labelArray.length === data1.length && data1.length === data2.length) {
+      dispatch(lineTitle(chartTitle));
+      dispatch(lineDataName1(datasetName1));
+      dispatch(lineDataName2(datasetName2));
+      dispatch(setData1(data1));
+      dispatch(setData2(data2));
+      dispatch(setLabel(labelArray));
+    } else {
+      setAlert(true);
+      setTimeout(() => {
+        setAlert(false);
+      }, 6000);
+    }
   };
 
   return (
@@ -40,31 +54,58 @@ function Line() {
       >
         {({ errors, touched }) => (
           <Form>
-            <Field type="text" id="chartTitle" name="chartTitle" placeholder="Chart Title" />
-            {errors.chartTitle && touched.chartTitle ? (
-              <div>{errors.chartTitle}</div>
-            ) : null}
-            <Field type="text" id="datasetName1" name="datasetName1" placeholder="Dataset Name" />
-            {errors.datasetName1 && touched.datasetName1 ? (
-              <div>{errors.datasetName1}</div>
-            ) : null}
-            <Field type="text" id="datasetData1" name="datasetData1" placeholder="Dataset Data (e.g. 100, 200, 300...)" />
-            {errors.datasetData1 && touched.datasetData1 ? (
-              <div>{errors.datasetData1}</div>
-            ) : null}
-           <Field type="text" id="datasetName2" name="datasetName2" placeholder="Dataset Name" />
-            {errors.datasetName2 && touched.datasetName2 ? (
-              <div>{errors.datasetName2}</div>
-            ) : null}
-            <Field type="text" id="datasetData2" name="datasetData2" placeholder="Dataset Data (e.g. 100, 200, 300...)" />
-            {errors.datasetData2 && touched.datasetData2 ? (
-              <div>{errors.datasetData2}</div>
-            ) : null}
-            <Field type="text" id="label" name="label" placeholder="Labels (e.g. January, February, March...)" />
-            {errors.label && touched.label ? (
-              <div>{errors.label}</div>
-            ) : null}
+            <Field
+              className={errors.chartTitle && touched.chartTitle ? 'alert-input' : 'input'}
+              type="text" id="chartTitle"
+              name="chartTitle"
+              placeholder="Chart Title"
+            />
+
+            <Field
+              className={errors.datasetName1 && touched.datasetName1 ? 'alert-input' : 'input'}
+              type="text" id="datasetName1"
+              name="datasetName1"
+              placeholder="Dataset 1 Name"
+            />
+
+            <Field
+              className={errors.datasetData1 && touched.datasetData1 ? 'alert-input' : 'input'}
+              type="text"
+              id="datasetData1"
+              name="datasetData1"
+              placeholder="Dataset 1 (e.g. 100, 200, 300...)"
+            />
+
+            <Field
+              className={errors.datasetName2 && touched.datasetName2 ? 'alert-input' : 'input'}
+              type="text"
+              id="datasetName2"
+              name="datasetName2"
+              placeholder="Dataset 2 Name"
+            />
+
+            <Field
+              className={errors.datasetData2 && touched.datasetData2 ? 'alert-input' : 'input'}
+              type="text"
+              id="datasetData2"
+              name="datasetData2"
+              placeholder="Dataset 2 (e.g. 100, 200, 300...)"
+            />
+
+            <Field
+              className={errors.label && touched.label ? 'alert-input' : 'input'}
+              type="text"
+              id="label"
+              name="label"
+              placeholder="Labels (e.g. January, February, March...)"
+            />
+
             <button type="submit">Submit</button>
+
+            {alert ? <div className="alert">
+                    <span className="closebtn" onClick={() => setAlert(false)}>&times;</span>
+                      The number of data points and the number of labels are not equal.
+                    </div> : null}
           </Form>
         )}
       </Formik>
